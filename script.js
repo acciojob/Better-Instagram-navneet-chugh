@@ -1,25 +1,47 @@
 //your code here
-document.addEventListener("DOMContentLoaded", function() {
-  const images = document.querySelectorAll(".image");
-  let selectedImage = null;
+// Get all draggable elements
+const images = document.querySelectorAll('.image');
 
-  images.forEach(image => {
-    image.addEventListener("dragstart", function(e) {
-      selectedImage = this;
+let draggedImage = null;
+
+// Add dragstart event listener to all images
+images.forEach((image) => {
+    image.addEventListener('dragstart', (event) => {
+        draggedImage = event.target;
+        event.dataTransfer.setData('text/plain', ''); // Necessary for Firefox
+        setTimeout(() => {
+            event.target.style.display = 'none'; // Hide the image during the drag operation
+        }, 0);
     });
 
-    image.addEventListener("dragover", function(e) {
-      e.preventDefault();
+    image.addEventListener('dragend', () => {
+        setTimeout(() => {
+            draggedImage.style.display = 'block'; // Show the image after the drag operation
+            draggedImage = null;
+        }, 0);
     });
+});
 
-    image.addEventListener("drop", function(e) {
-      e.preventDefault();
-      if (selectedImage !== null && selectedImage !== this) {
-        // Swap background images
-        const tempImage = this.style.backgroundImage;
-        this.style.backgroundImage = selectedImage.style.backgroundImage;
-        selectedImage.style.backgroundImage = tempImage;
-      }
-    });
-  });
+// Add dragover and drop event listeners to the parent container
+const parent = document.getElementById('parent');
+parent.addEventListener('dragover', (event) => {
+    event.preventDefault();
+});
+
+parent.addEventListener('drop', (event) => {
+    event.preventDefault();
+    if (draggedImage) {
+        // Swap the innerHTML (text) of the dragged and dropped elements
+        const temp = draggedImage.innerHTML;
+        draggedImage.innerHTML = event.target.innerHTML;
+        event.target.innerHTML = temp;
+
+        // Reset the border style (if any) from previously selected elements
+        images.forEach((image) => {
+            image.classList.remove('selected');
+        });
+
+        // Add a border to the currently selected element
+        event.target.classList.add('selected');
+    }
 });
